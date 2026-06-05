@@ -8,23 +8,31 @@ export default class Cl_sPedido extends Cl_sMockApi {
   private static urlCuentas = "https://6a1730e11b90031f81b2232e.mockapi.io/cuentasBancarias";
 
   static async obtenerProductos(): Promise<any[]> {
-    return await this.gett(this.urlProductos);
+    return await this.get(this.urlProductos);
   }
 
   static async obtenerCuentasDestino(): Promise<any[]> {
-    return await this.gett(this.urlCuentas);
+    return await this.get(this.urlCuentas);
   }
 
   static async obtenerTasaDinamica(): Promise<number> {
-    const data = await this.gett(this.urlConfig);
+    const data = await this.get(this.urlConfig);
     return data && data.tasaCambio ? parseFloat(data.tasaCambio) : 40.0;
   }
 
   static async consultarEstadoPedido(cedula: number): Promise<any[]> {
-    return await this.gett(`${this.urlPedidos}?cedula=${cedula}`);
+    return await this.get(`${this.urlPedidos}?cedula=${cedula}`);
   }
 
   static async guardarPedido(nuevoPedido: Cl_mPedido): Promise<{ ok: boolean; mensaje: string }> {
-    return await this.postt(this.urlPedidos, nuevoPedido);
+    try {
+      const resData = await this.post(this.urlPedidos, nuevoPedido);
+      if (!resData) {
+        return { ok: false, mensaje: "Error al registrar el pedido." };
+      }
+      return { ok: true, mensaje: "¡Pedido enviado! Orden Nro: " + resData.id };
+    } catch (error: any) {
+      return { ok: false, mensaje: "Error de red: " + error.message };
+    }
   }
 }

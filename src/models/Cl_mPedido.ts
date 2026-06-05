@@ -14,6 +14,7 @@ export default class Cl_mPedido {
   private _puntoTipoCuenta: "ahorro" | "corriente" | "" = "";
   private _puntoClave: string = "";
   private _status: "pendiente" | "aceptado" | "rechazado" = "pendiente";
+  private _fecha: string = "";
 
   constructor({
     id,
@@ -30,6 +31,7 @@ export default class Cl_mPedido {
     puntoTipoCuenta = "",
     puntoClave = "",
     status = "pendiente",
+    fecha = "",
   }: {
     id: string;
     cedula: number;
@@ -45,6 +47,7 @@ export default class Cl_mPedido {
     puntoTipoCuenta?: "ahorro" | "corriente" | "";
     puntoClave?: string;
     status?: "pendiente" | "aceptado" | "rechazado";
+    fecha?: string;
   }) {
     this.id = id;
     this.cedula = cedula;
@@ -60,6 +63,7 @@ export default class Cl_mPedido {
     this.puntoTipoCuenta = puntoTipoCuenta;
     this.puntoClave = puntoClave;
     this.status = status;
+    this.fecha = fecha;
   }
 
   public get id(): string { return this._id; }
@@ -103,6 +107,9 @@ export default class Cl_mPedido {
 
   public get status(): "pendiente" | "aceptado" | "rechazado" { return this._status; }
   public set status(value: "pendiente" | "aceptado" | "rechazado") { this._status = value; }
+
+  public get fecha(): string { return this._fecha; }
+  public set fecha(value: string) { this._fecha = value; }
 
   public desglosarCantidades(): { producto: string; cantidad: number }[] {
     const listado: { producto: string; cantidad: number }[] = [];
@@ -156,6 +163,7 @@ export default class Cl_mPedido {
       puntoTipoCuenta: this.puntoTipoCuenta,
       puntoClave: this.puntoClave,
       status: this.status,
+      fecha: this.fecha,
     };
   }
 }

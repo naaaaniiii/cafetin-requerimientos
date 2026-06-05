@@ -31,52 +31,71 @@
       </div>
     </section>
 
-    <!-- PASO 2: MENÚ DEL DÍA (CON ACORDEONES) -->
+    <!-- PASO 2: MENÚ DEL DÍA (CON BOTONES COLGANTES) -->
     <section class="tarjeta-modulo">
       <div class="modulo-cabecera">
         <span class="paso-numero">2</span>
         <h2>Menú del Día</h2>
       </div>
-      <p class="instruccion">Presiona sobre una sección para desplegar sus productos disponibles:</p>
+      <p id="pedido_instruccionMenu" class="instruccion">Presiona sobre una sección para desplegar sus productos disponibles:</p>
 
-      <!-- ACORDEÓN COMIDAS -->
-      <div id="categoria-comida" class="categoria-bloque">
-        <div class="categoria-cabecera">
-          <h3>🍔 Comidas</h3>
-        </div>
-        <div class="contenido grid-productos"></div>
+      <!-- CONTENEDOR DE BOTONES COLGANTES -->
+      <div id="secciones-botones-container" class="grid-secciones-botones">
+        <button type="button" class="btn-colgante" data-categoria="comida">
+          <span class="btn-colgante-emoji">🍔</span>
+          <span class="btn-colgante-titulo">Comidas</span>
+        </button>
+        <button type="button" class="btn-colgante" data-categoria="bebida">
+          <span class="btn-colgante-emoji">🥤</span>
+          <span class="btn-colgante-titulo">Bebidas</span>
+        </button>
+        <button type="button" class="btn-colgante" data-categoria="postre">
+          <span class="btn-colgante-emoji">🍰</span>
+          <span class="btn-colgante-titulo">Postres</span>
+        </button>
+        <button type="button" class="btn-colgante" data-categoria="chucheria">
+          <span class="btn-colgante-emoji">🍿</span>
+          <span class="btn-colgante-titulo">Chucherías</span>
+        </button>
+        <button type="button" class="btn-colgante" data-categoria="combo">
+          <span class="btn-colgante-emoji">🎁</span>
+          <span class="btn-colgante-titulo">Combos Especiales</span>
+        </button>
       </div>
 
-      <!-- ACORDEÓN BEBIDAS -->
-      <div id="categoria-bebida" class="categoria-bloque">
-        <div class="categoria-cabecera">
-          <h3>🥤 Bebidas</h3>
+      <!-- VISTA DE DETALLE POR CATEGORÍA -->
+      <div id="categoria-detalle-contenedor" class="oculto">
+        <div class="detalle-cabecera">
+          <button type="button" id="btn-volver-secciones" class="btn-volver">
+            ← Volver a Secciones
+          </button>
+          <h3 id="categoria-detalle-titulo">🍔 Comidas</h3>
         </div>
-        <div class="contenido grid-productos"></div>
-      </div>
 
-      <!-- ACORDEÓN POSTRES -->
-      <div id="categoria-postre" class="categoria-bloque">
-        <div class="categoria-cabecera">
-          <h3>🍰 Postres</h3>
+        <!-- CATEGORÍA COMIDAS -->
+        <div id="categoria-comida" class="categoria-bloque oculto">
+          <div class="contenido grid-productos"></div>
         </div>
-        <div class="contenido grid-productos"></div>
-      </div>
 
-      <!-- ACORDEÓN CHUCHERÍAS -->
-      <div id="categoria-chucheria" class="categoria-bloque">
-        <div class="categoria-cabecera">
-          <h3>🍿 Chucherías</h3>
+        <!-- CATEGORÍA BEBIDAS -->
+        <div id="categoria-bebida" class="categoria-bloque oculto">
+          <div class="contenido grid-productos"></div>
         </div>
-        <div class="contenido grid-productos"></div>
-      </div>
 
-      <!-- ACORDEÓN COMBOS -->
-      <div id="categoria-combo" class="categoria-bloque">
-        <div class="categoria-cabecera">
-          <h3>🎁 Combos Especiales</h3>
+        <!-- CATEGORÍA POSTRES -->
+        <div id="categoria-postre" class="categoria-bloque oculto">
+          <div class="contenido grid-productos"></div>
         </div>
-        <div class="contenido grid-productos"></div>
+
+        <!-- CATEGORÍA CHUCHERÍAS -->
+        <div id="categoria-chucheria" class="categoria-bloque oculto">
+          <div class="contenido grid-productos"></div>
+        </div>
+
+        <!-- CATEGORÍA COMBOS -->
+        <div id="categoria-combo" class="categoria-bloque oculto">
+          <div class="contenido grid-productos"></div>
+        </div>
       </div>
     </section>
 
@@ -132,28 +151,40 @@
             </div>
             <div class="grupo-input">
               <label for="pedido_inReferencia">Nro. de Referencia (Últimos 4 dígitos):</label>
-              <input type="text" id="pedido_inReferencia" placeholder="Ej. 0509" />
+              <input type="text" id="pedido_inReferencia" maxlength="4" placeholder="Ej. 0509" />
             </div>
           </div>
         </div>
 
         <!-- SUBFORMULARIO 2: PARA OPERACIONES POR PUNTO DE VENTA -->
-        <div id="secCamposPunto" class="oculto">
-          <div class="grupo-input" style="margin-bottom: 10px;">
-            <label for="pedido_inPuntoCedula">Cédula:</label>
-            <input type="number" id="pedido_inPuntoCedula" placeholder="Ej. 25123456" />
+        <div id="secCamposPunto" class="oculto panel-punto">
+          <div class="punto-cabecera">
+            <span class="punto-icono">💳</span>
+            <h4>Punto de Venta</h4>
           </div>
+          
+          <div class="punto-monto-debitar">
+            <span>Monto a Debitar:</span>
+            <strong id="punto_lblMontoTotal">0.00 Bs (0.00 $)</strong>
+          </div>
+
+          <div class="grupo-input" style="margin-bottom: 12px;">
+            <label for="pedido_inPuntoCedula">Cédula del Tarjetahabiente:</label>
+            <input type="number" id="pedido_inPuntoCedula" placeholder="Ej. 27123456" />
+          </div>
+          
           <div class="formulario-linea">
             <div class="grupo-input">
               <label for="pedido_selectPuntoTipo">Tipo de Cuenta:</label>
               <select id="pedido_selectPuntoTipo">
+                <option value="" disabled selected>-- Seleccione tipo --</option>
                 <option value="ahorro">Ahorro</option>
                 <option value="corriente">Corriente</option>
               </select>
             </div>
             <div class="grupo-input">
-              <label for="pedido_inPuntoClave">Clave de Tarjeta (4-6 dígitos):</label>
-              <input type="password" id="pedido_inPuntoClave" maxlength="6" placeholder="••••" />
+              <label for="pedido_inPuntoClave">Clave PIN:</label>
+              <input type="password" id="pedido_inPuntoClave" maxlength="6" placeholder="Ej. 123456" />
             </div>
           </div>
         </div>

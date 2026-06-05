@@ -8,7 +8,7 @@ export default class Cl_sCafetin {
 
   static async obtenerPedidos() { 
     return await Cl_sMockApiCaf.get(this.urlPedidos); 
-}
+  }
 
   static async actualizarEstadoPedido(id: string, status: string) {
     return await Cl_sMockApiCaf.put(`${this.urlPedidos}/${id}`, { status });
@@ -18,9 +18,9 @@ export default class Cl_sCafetin {
     return await Cl_sMockApiCaf.get(this.urlProductos);
  }
 
-  static async agregarProducto(prod: any) { 
-    return await Cl_sMockApiCaf.post(this.urlProductos, prod);
- }
+  static async agregarProducto(prod: any): Promise<boolean> { 
+    return !!(await Cl_sMockApiCaf.post(this.urlProductos, prod));
+  }
 
   static async eliminarProducto(id: string) { 
     return await Cl_sMockApiCaf.delete(`${this.urlProductos}/${id}`); 
@@ -35,7 +35,7 @@ export default class Cl_sCafetin {
     return await Cl_sMockApiCaf.put(this.urlConfig, { tasaCambio: nuevaTasa });
   }
 
-  static async agregarCuenta(cuenta: any) { 
-    return await Cl_sMockApiCaf.post(this.urlCuentas, cuenta); 
+  static async agregarCuenta(cuenta: any): Promise<boolean> { 
+    return !!(await Cl_sMockApiCaf.post(this.urlCuentas, cuenta)); 
 }
 }

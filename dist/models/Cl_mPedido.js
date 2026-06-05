@@ -14,7 +14,8 @@ export default class Cl_mPedido {
     _puntoTipoCuenta = "";
     _puntoClave = "";
     _status = "pendiente";
-    constructor({ id, cedula, nombre, resumenProductos, montoTotal$, montoTotalBs, metodoPago = "transferencia", cuentaOrigen = "", cuentaDestino = "", referencia = "", puntoCedula = 0, puntoTipoCuenta = "", puntoClave = "", status = "pendiente", }) {
+    _fecha = "";
+    constructor({ id, cedula, nombre, resumenProductos, montoTotal$, montoTotalBs, metodoPago = "transferencia", cuentaOrigen = "", cuentaDestino = "", referencia = "", puntoCedula = 0, puntoTipoCuenta = "", puntoClave = "", status = "pendiente", fecha = "", }) {
         this.id = id;
         this.cedula = cedula;
         this.nombre = nombre;
@@ -29,6 +30,7 @@ export default class Cl_mPedido {
         this.puntoTipoCuenta = puntoTipoCuenta;
         this.puntoClave = puntoClave;
         this.status = status;
+        this.fecha = fecha;
     }
     get id() { return this._id; }
     set id(value) { this._id = value; }
@@ -58,6 +60,8 @@ export default class Cl_mPedido {
     set puntoClave(value) { this._puntoClave = value; }
     get status() { return this._status; }
     set status(value) { this._status = value; }
+    get fecha() { return this._fecha; }
+    set fecha(value) { this._fecha = value; }
     desglosarCantidades() {
         const listado = [];
         if (!this.resumenProductos)
@@ -113,6 +117,7 @@ export default class Cl_mPedido {
             puntoTipoCuenta: this.puntoTipoCuenta,
             puntoClave: this.puntoClave,
             status: this.status,
+            fecha: this.fecha,
         };
     }
 }

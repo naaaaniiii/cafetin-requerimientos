@@ -70,6 +70,12 @@ export default class Cl_cPedido {
       this.modelo.montoTotal$ = this.vista.montoTotal$;
       this.modelo.montoTotalBs = this.vista.montoTotalBs;
       this.modelo.status = "pendiente";
+      
+      const hoy = new Date();
+      const ano = hoy.getFullYear();
+      const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoy.getDate()).padStart(2, '0');
+      this.modelo.fecha = `${ano}-${mes}-${dia}`;
 
       // Guardamos explícitamente el tipo de pago en la propiedad extendida del modelo
       const modeloDinamico = this.modelo as any;

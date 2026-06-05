@@ -3,6 +3,7 @@ import { I_vCafetin } from "../interfaces/I_vCafetin.js";
 export default class vCafetin implements I_vCafetin {
   private inTasa: HTMLInputElement;
   private btTasa: HTMLButtonElement;
+  private inProdCodigo: HTMLInputElement;
   private inProdNombre: HTMLInputElement;
   private inProdPrecio: HTMLInputElement;
   private inProdCategoria: HTMLSelectElement;
@@ -21,12 +22,19 @@ export default class vCafetin implements I_vCafetin {
   private lblDinamicoNumero: HTMLElement;
   private lblCtaCedula: HTMLElement;
 
+  // NUEVOS COMPONENTES HTML
+  private txtFechaBuscar: HTMLInputElement;
+  private txtProductoBuscar: HTMLSelectElement;
+  private btnBuscarPorFecha: HTMLButtonElement;
+  private lblResultadoCantidades: HTMLElement;
+
   private manejadorAccionPedido!: (id: string, accion: "aceptado" | "rechazado") => void;
   private manejadorEliminarProducto!: (id: string) => void;
 
   constructor() {
     this.inTasa = document.getElementById("admin_inTasa") as HTMLInputElement;
     this.btTasa = document.getElementById("admin_btTasa") as HTMLButtonElement;
+    this.inProdCodigo = document.getElementById("admin_inProdCodigo") as HTMLInputElement;
     this.inProdNombre = document.getElementById("admin_inProdNombre") as HTMLInputElement;
     this.inProdPrecio = document.getElementById("admin_inProdPrecio") as HTMLInputElement;
     this.inProdCategoria = document.getElementById("admin_inProdCategoria") as HTMLSelectElement;
@@ -45,10 +53,51 @@ export default class vCafetin implements I_vCafetin {
     this.lblDinamicoNumero = document.getElementById("lblDinamicoNumero") as HTMLElement;
     this.lblCtaCedula = document.getElementById("lblCtaCedula") as HTMLElement;
 
+    // Vinculación de los nuevos elementos asignados en el HTML
+    this.txtFechaBuscar = document.getElementById("txtFechaBuscar") as HTMLInputElement;
+    this.txtProductoBuscar = document.getElementById("txtProductoBuscar") as HTMLSelectElement;
+    this.btnBuscarPorFecha = document.getElementById("btnBuscarPorFecha") as HTMLButtonElement;
+    this.lblResultadoCantidades = document.getElementById("lblResultadoCantidades") as HTMLElement;
+
+    if (this.txtFechaBuscar) {
+      this.txtFechaBuscar.value = new Date().toISOString().split('T')[0];
+    }
+
     // Escuchador de cambios para alternar las etiquetas y ocultar campos según requerimiento
     if (this.selectTipoFondo) {
       this.selectTipoFondo.onchange = () => this.alternarTipoRegistro();
     }
+
+    // Configuración de la navegación en el panel de administración
+    const btnsNav = document.querySelectorAll(".btn-nav-admin");
+    const sections = ["sec-tasa", "sec-producto", "sec-cuenta", "sec-ventas", "sec-menu"];
+
+    const mostrarSeccionAdmin = (targetId: string) => {
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === targetId) {
+            el.classList.remove("oculto");
+          } else {
+            el.classList.add("oculto");
+          }
+        }
+      });
+    };
+
+    btnsNav.forEach(btn => {
+      btn.addEventListener("click", () => {
+        btnsNav.forEach(b => b.classList.remove("activo"));
+        btn.classList.add("activo");
+        const target = btn.getAttribute("data-target");
+        if (target) {
+          mostrarSeccionAdmin(target);
+        }
+      });
+    });
+
+    // Iniciar con la sección de tasa visible por defecto
+    mostrarSeccionAdmin("sec-tasa");
   }
 
   private alternarTipoRegistro(): void {
@@ -67,6 +116,7 @@ export default class vCafetin implements I_vCafetin {
 
   // --- GETTERS ---
   get nuevaTasa(): number { return parseFloat(this.inTasa.value.trim()) || 0; }
+  get prodCodigo(): string { return this.inProdCodigo.value.trim(); }
   get prodNombre(): string { return this.inProdNombre.value.trim(); }
   get prodPrecio(): number { return parseFloat(this.inProdPrecio.value.trim()) || 0; }
   get prodCategoria(): string { return this.inProdCategoria.value; }
@@ -80,14 +130,39 @@ export default class vCafetin implements I_vCafetin {
     return this.selectTipoFondo ? (this.selectTipoFondo.value as any) : "transferencia";
   }
 
+  get fechaBuscar(): string { 
+    return this.txtFechaBuscar ? this.txtFechaBuscar.value : ""; 
+  }
+  
+  get productoBuscar(): string { 
+    return this.txtProductoBuscar ? this.txtProductoBuscar.value.trim() : ""; 
+  }
+
   // --- MANEJADORES ---
   onActualizarTasa(callback: () => void): void { this.btTasa.onclick = callback; }
   onAgregarProducto(callback: () => void): void { this.btProd.onclick = callback; }
   onAgregarCuenta(callback: () => void): void { this.btCta.onclick = callback; }
   onEliminarProducto(callback: (id: string) => void): void { this.manejadorEliminarProducto = callback; }
   onAccionPedido(callback: (id: string, accion: "aceptado" | "rechazado") => void): void { this.manejadorAccionPedido = callback; }
+  
+  onBuscarPorFecha(callback: () => void): void {
+    if (this.btnBuscarPorFecha) {
+      this.btnBuscarPorFecha.onclick = callback;
+    }
+  }
 
   setTasaActual(tasa: number): void { this.inTasa.value = tasa.toString(); }
+
+  mostrarCantidadReportada(cantidad: number, producto: string, fecha: string): void {
+    if (!this.lblResultadoCantidades) return;
+    if (cantidad === 0) {
+      this.lblResultadoCantidades.innerHTML = `No se vendió "${producto}" el ${fecha}.`;
+      this.lblResultadoCantidades.style.color = "#c62828";
+    } else {
+      this.lblResultadoCantidades.innerHTML = `Vendido de "${producto}" el ${fecha}: <b>${cantidad} unds.</b>`;
+      this.lblResultadoCantidades.style.color = "#2e7d32";
+    }
+  }
 
   // --- RENDERIZADO ---
   public renderizarEstadisticas(datos: any): void {
@@ -147,14 +222,31 @@ export default class vCafetin implements I_vCafetin {
       const li = document.createElement("li");
       li.className = "prod-item";
       li.innerHTML = `
-        <span>• <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
+        <span>• [${p.codigo || 'S/C'}] <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
         <button class="btn-del" data-id="${p.id}">🗑</button>`;
       this.listaProductos.appendChild(li);
       li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(p.id));
     });
+
+    // Rellenar dinámicamente el select para la consulta de productos por fecha
+    if (this.txtProductoBuscar) {
+      const valorSeleccionado = this.txtProductoBuscar.value;
+      this.txtProductoBuscar.innerHTML = `<option value="">-- Seleccione un Producto --</option>`;
+      productos.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.codigo || p.nombre;
+        option.textContent = p.codigo ? `${p.codigo} - ${p.nombre}` : p.nombre;
+        this.txtProductoBuscar.appendChild(option);
+      });
+      // Mantener la selección previa si el producto sigue existiendo
+      if (valorSeleccionado) {
+        this.txtProductoBuscar.value = valorSeleccionado;
+      }
+    }
   }
 
   limpiarFormProducto(): void { 
+    this.inProdCodigo.value = ""; 
     this.inProdNombre.value = ""; 
     this.inProdPrecio.value = ""; 
   }

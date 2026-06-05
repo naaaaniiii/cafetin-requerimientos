@@ -21,6 +21,11 @@ export default class Cl_vPedido {
     inPuntoClave;
     selectPuntoTipo;
     lblInfoEfectivo;
+    // NUEVOS ELEMENTOS PARA NAVEGACIÓN DE BOTONES COLGANTES
+    containerSecciones;
+    containerDetalle;
+    tituloDetalle;
+    btnVolverSecciones;
     tasaCambio = 1;
     totalUSD = 0;
     totalBS = 0;
@@ -49,17 +54,49 @@ export default class Cl_vPedido {
         this.inPuntoClave = document.getElementById("pedido_inPuntoClave");
         this.selectPuntoTipo = document.getElementById("pedido_selectPuntoTipo");
         this.lblInfoEfectivo = document.getElementById("pedido_lblInfoEfectivo");
+        // Elementos de navegación
+        this.containerSecciones = document.getElementById("secciones-botones-container");
+        this.containerDetalle = document.getElementById("categoria-detalle-contenedor");
+        this.tituloDetalle = document.getElementById("categoria-detalle-titulo");
+        this.btnVolverSecciones = document.getElementById("btn-volver-secciones");
         // Configuración inicial del comportamiento dinámico de pagos
         this.selectMetodoPago.onchange = () => this.alternarCamposPago();
-        // Lógica del acordeón para las 5 secciones del menú
-        document.querySelectorAll(".categoria-cabecera").forEach(header => {
-            header.addEventListener("click", () => {
-                const bloque = header.parentElement;
-                if (bloque) {
-                    bloque.classList.toggle("activo");
+        // Mapeo para nombres bonitos de las categorías
+        const nombresCategorias = {
+            comida: "🍔 Comidas",
+            bebida: "🥤 Bebidas",
+            postre: "🍰 Postres",
+            chucheria: "🍿 Chucherías",
+            combo: "🎁 Combos Especiales"
+        };
+        // Configuración de la navegación por botones colgantes
+        document.querySelectorAll(".btn-colgante").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const categoria = btn.getAttribute("data-categoria");
+                if (categoria) {
+                    // Ocultar cuadrícula principal
+                    this.containerSecciones.classList.add("oculto");
+                    // Mostrar vista de detalle
+                    this.containerDetalle.classList.remove("oculto");
+                    // Actualizar el título de la sección activa
+                    this.tituloDetalle.innerText = nombresCategorias[categoria] || "Categoría";
+                    // Ocultar cualquier categoría previamente mostrada
+                    document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
+                    // Mostrar la categoría elegida
+                    const bloque = document.getElementById(`categoria-${categoria}`);
+                    if (bloque) {
+                        bloque.classList.remove("oculto");
+                    }
                 }
             });
         });
+        if (this.btnVolverSecciones) {
+            this.btnVolverSecciones.onclick = () => {
+                this.containerDetalle.classList.add("oculto");
+                this.containerSecciones.classList.remove("oculto");
+                document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
+            };
+        }
         // Delegación de eventos para botones del carrito
         document.addEventListener("click", (e) => {
             const target = e.target;
@@ -68,6 +105,30 @@ export default class Cl_vPedido {
             if (target.classList.contains("btn-restar"))
                 this.modificarCantidad(target.dataset.id, -1);
         });
+        // Restringir la clave del punto de venta a solo números (evitar letras y caracteres especiales)
+        if (this.inPuntoClave) {
+            this.inPuntoClave.addEventListener("keypress", (e) => {
+                // Bloquear si la tecla presionada no es un número (dígito de 0 a 9)
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+            this.inPuntoClave.addEventListener("input", () => {
+                // En caso de pegar o autocompletar, limpiar cualquier carácter no numérico
+                this.inPuntoClave.value = this.inPuntoClave.value.replace(/\D/g, "");
+            });
+        }
+        // Restringir la referencia bancaria a solo números (evitar letras y caracteres especiales)
+        if (this.inReferencia) {
+            this.inReferencia.addEventListener("keypress", (e) => {
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+            this.inReferencia.addEventListener("input", () => {
+                this.inReferencia.value = this.inReferencia.value.replace(/\D/g, "");
+            });
+        }
         this.btSiguiente.onclick = () => {
             if (this.cedula === 0 || this.nombre === "") {
                 alert("Por favor introduce tu cédula y nombre antes de continuar.");
@@ -122,7 +183,12 @@ export default class Cl_vPedido {
             this.inCuentaDestino.innerHTML = `<option value="Directo en Taquilla">No hay cuentas registradas - Pagar en taquilla</option>`;
             return;
         }
-        this.inCuentaDestino.innerHTML = filtradas.map(c => `<option value="${c.banco} - ${c.numero}">${c.banco} - ${c.titular} (${c.numero})</option>`).join("");
+        this.inCuentaDestino.innerHTML = filtradas.map(c => {
+            const valor = tipo === "pagomovil"
+                ? `${c.banco} - ${c.titular} - ${c.numero}`
+                : `${c.banco} - ${c.numero}`;
+            return `<option value="${valor}">${c.banco} - ${c.titular} (${c.numero})</option>`;
+        }).join("");
     }
     // --- GETTERS ---
     get cedula() { return parseInt(this.inCedula.value.trim()) || 0; }
@@ -142,7 +208,7 @@ export default class Cl_vPedido {
     get resumenProductos() {
         return Object.entries(this.carrito)
             .filter(([_, p]) => p.cantidad > 0)
-            .map(([_, p]) => `${p.cantidad}x${p.nombre}`)
+            .map(([_, p]) => `${p.cantidad}x${p.codigo || p.nombre}`)
             .join(", ");
     }
     // --- MÉTODOS ---
@@ -158,7 +224,7 @@ export default class Cl_vPedido {
     }
     renderizarMenu(productos) {
         productos.forEach(p => {
-            this.carrito[p.id] = { nombre: p.nombre, cantidad: 0, precio: p.precio };
+            this.carrito[p.id] = { nombre: p.nombre, cantidad: 0, precio: p.precio, codigo: p.codigo || p.nombre };
             const contenedor = document.querySelector(`#categoria-${p.categoria.toLowerCase()} .contenido`);
             if (!contenedor)
                 return;
@@ -179,6 +245,11 @@ export default class Cl_vPedido {
         this.totalBS = this.totalUSD * this.tasaCambio;
         this.lblTotalUSD.innerText = this.totalUSD.toFixed(2);
         this.lblTotalBS.innerText = this.totalBS.toFixed(2);
+        // Actualizar el monto en el panel de punto de venta
+        const puntoMontoTotal = document.getElementById("punto_lblMontoTotal");
+        if (puntoMontoTotal) {
+            puntoMontoTotal.innerText = `${this.totalBS.toFixed(2)} Bs (${this.totalUSD.toFixed(2)} $)`;
+        }
     }
     limpiarFormulario() {
         this.inCedula.value = "";
@@ -193,6 +264,10 @@ export default class Cl_vPedido {
         this.calcularFactura();
         this.alternarCamposPago();
         this.secPago.classList.add("oculto");
+        // Reiniciar vista de secciones
+        this.containerDetalle.classList.add("oculto");
+        this.containerSecciones.classList.remove("oculto");
+        document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
     }
     mostrarHistorial(cedula, pedidos) {
         if (pedidos.length === 0) {

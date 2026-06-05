@@ -1,6 +1,7 @@
 export default class vCafetin {
     inTasa;
     btTasa;
+    inProdCodigo;
     inProdNombre;
     inProdPrecio;
     inProdCategoria;
@@ -17,11 +18,17 @@ export default class vCafetin {
     grupoNombreTitular;
     lblDinamicoNumero;
     lblCtaCedula;
+    // NUEVOS COMPONENTES HTML
+    txtFechaBuscar;
+    txtProductoBuscar;
+    btnBuscarPorFecha;
+    lblResultadoCantidades;
     manejadorAccionPedido;
     manejadorEliminarProducto;
     constructor() {
         this.inTasa = document.getElementById("admin_inTasa");
         this.btTasa = document.getElementById("admin_btTasa");
+        this.inProdCodigo = document.getElementById("admin_inProdCodigo");
         this.inProdNombre = document.getElementById("admin_inProdNombre");
         this.inProdPrecio = document.getElementById("admin_inProdPrecio");
         this.inProdCategoria = document.getElementById("admin_inProdCategoria");
@@ -38,10 +45,46 @@ export default class vCafetin {
         this.grupoNombreTitular = document.getElementById("grupoNombreTitular");
         this.lblDinamicoNumero = document.getElementById("lblDinamicoNumero");
         this.lblCtaCedula = document.getElementById("lblCtaCedula");
+        // Vinculación de los nuevos elementos asignados en el HTML
+        this.txtFechaBuscar = document.getElementById("txtFechaBuscar");
+        this.txtProductoBuscar = document.getElementById("txtProductoBuscar");
+        this.btnBuscarPorFecha = document.getElementById("btnBuscarPorFecha");
+        this.lblResultadoCantidades = document.getElementById("lblResultadoCantidades");
+        if (this.txtFechaBuscar) {
+            this.txtFechaBuscar.value = new Date().toISOString().split('T')[0];
+        }
         // Escuchador de cambios para alternar las etiquetas y ocultar campos según requerimiento
         if (this.selectTipoFondo) {
             this.selectTipoFondo.onchange = () => this.alternarTipoRegistro();
         }
+        // Configuración de la navegación en el panel de administración
+        const btnsNav = document.querySelectorAll(".btn-nav-admin");
+        const sections = ["sec-tasa", "sec-producto", "sec-cuenta", "sec-ventas", "sec-menu"];
+        const mostrarSeccionAdmin = (targetId) => {
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (id === targetId) {
+                        el.classList.remove("oculto");
+                    }
+                    else {
+                        el.classList.add("oculto");
+                    }
+                }
+            });
+        };
+        btnsNav.forEach(btn => {
+            btn.addEventListener("click", () => {
+                btnsNav.forEach(b => b.classList.remove("activo"));
+                btn.classList.add("activo");
+                const target = btn.getAttribute("data-target");
+                if (target) {
+                    mostrarSeccionAdmin(target);
+                }
+            });
+        });
+        // Iniciar con la sección de tasa visible por defecto
+        mostrarSeccionAdmin("sec-tasa");
     }
     alternarTipoRegistro() {
         if (this.selectTipoFondo.value === "pagomovil") {
@@ -59,6 +102,7 @@ export default class vCafetin {
     }
     // --- GETTERS ---
     get nuevaTasa() { return parseFloat(this.inTasa.value.trim()) || 0; }
+    get prodCodigo() { return this.inProdCodigo.value.trim(); }
     get prodNombre() { return this.inProdNombre.value.trim(); }
     get prodPrecio() { return parseFloat(this.inProdPrecio.value.trim()) || 0; }
     get prodCategoria() { return this.inProdCategoria.value; }
@@ -70,13 +114,36 @@ export default class vCafetin {
     get tipoCuentaRegistrar() {
         return this.selectTipoFondo ? this.selectTipoFondo.value : "transferencia";
     }
+    get fechaBuscar() {
+        return this.txtFechaBuscar ? this.txtFechaBuscar.value : "";
+    }
+    get productoBuscar() {
+        return this.txtProductoBuscar ? this.txtProductoBuscar.value.trim() : "";
+    }
     // --- MANEJADORES ---
     onActualizarTasa(callback) { this.btTasa.onclick = callback; }
     onAgregarProducto(callback) { this.btProd.onclick = callback; }
     onAgregarCuenta(callback) { this.btCta.onclick = callback; }
     onEliminarProducto(callback) { this.manejadorEliminarProducto = callback; }
     onAccionPedido(callback) { this.manejadorAccionPedido = callback; }
+    onBuscarPorFecha(callback) {
+        if (this.btnBuscarPorFecha) {
+            this.btnBuscarPorFecha.onclick = callback;
+        }
+    }
     setTasaActual(tasa) { this.inTasa.value = tasa.toString(); }
+    mostrarCantidadReportada(cantidad, producto, fecha) {
+        if (!this.lblResultadoCantidades)
+            return;
+        if (cantidad === 0) {
+            this.lblResultadoCantidades.innerHTML = `No se vendió "${producto}" el ${fecha}.`;
+            this.lblResultadoCantidades.style.color = "#c62828";
+        }
+        else {
+            this.lblResultadoCantidades.innerHTML = `Vendido de "${producto}" el ${fecha}: <b>${cantidad} unds.</b>`;
+            this.lblResultadoCantidades.style.color = "#2e7d32";
+        }
+    }
     // --- RENDERIZADO ---
     renderizarEstadisticas(datos) {
         const contenedor = document.getElementById("admin_contenedorEstadisticas");
@@ -130,13 +197,29 @@ export default class vCafetin {
             const li = document.createElement("li");
             li.className = "prod-item";
             li.innerHTML = `
-        <span>• <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
+        <span>• [${p.codigo || 'S/C'}] <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
         <button class="btn-del" data-id="${p.id}">🗑</button>`;
             this.listaProductos.appendChild(li);
             li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(p.id));
         });
+        // Rellenar dinámicamente el select para la consulta de productos por fecha
+        if (this.txtProductoBuscar) {
+            const valorSeleccionado = this.txtProductoBuscar.value;
+            this.txtProductoBuscar.innerHTML = `<option value="">-- Seleccione un Producto --</option>`;
+            productos.forEach(p => {
+                const option = document.createElement("option");
+                option.value = p.codigo || p.nombre;
+                option.textContent = p.codigo ? `${p.codigo} - ${p.nombre}` : p.nombre;
+                this.txtProductoBuscar.appendChild(option);
+            });
+            // Mantener la selección previa si el producto sigue existiendo
+            if (valorSeleccionado) {
+                this.txtProductoBuscar.value = valorSeleccionado;
+            }
+        }
     }
     limpiarFormProducto() {
+        this.inProdCodigo.value = "";
         this.inProdNombre.value = "";
         this.inProdPrecio.value = "";
     }

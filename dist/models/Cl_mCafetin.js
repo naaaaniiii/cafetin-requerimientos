@@ -15,7 +15,7 @@ export default class Cafetin {
         this._pedidos = [];
         arrayPlanos.forEach((p) => {
             this._pedidos.push(new Cl_mPedido({
-                id: p.id,
+                id: p.id || p._id,
                 nombre: p.nombre,
                 cedula: p.cedula,
                 resumenProductos: p.resumenProductos,
@@ -25,6 +25,7 @@ export default class Cafetin {
                 cuentaDestino: p.cuentaDestino,
                 referencia: p.referencia,
                 status: p.status,
+                fecha: p.fecha,
             }));
         });
     }
@@ -48,25 +49,50 @@ export default class Cafetin {
     calcularMontoAceptadoBs() {
         return this.calcularMontoAceptadoUsd() * this._tasaCambio;
     }
+    // MÉTODO PARA CONSULTAR LA CANTIDAD DE PRODUCTOS VENDIDOS EN UNA FECHA INDICADA
+    calcularCantidadPorProductoYFecha(productoNombre, fechaIndicada) {
+        let totalUnidades = 0;
+        const productoBuscar = productoNombre.trim().toLowerCase();
+        this._pedidos.forEach(pedido => {
+            if (pedido.fecha === fechaIndicada && pedido.status === "aceptado") {
+                const desgloses = pedido.desglosarCantidades();
+                desgloses.forEach(item => {
+                    if (item.producto.trim().toLowerCase() === productoBuscar) {
+                        totalUnidades += item.cantidad;
+                    }
+                });
+            }
+        });
+        return totalUnidades;
+    }
+    // MÉTODO CORREGIDO: Cuenta de forma segura sin importar mayúsculas/minúsculas ni espacios vacíos
     obtenerProductoMasPedido() {
         const conteoGlobal = {};
+        const formatoOriginal = {}; // Guarda el nombre bonito original para mostrarlo en el dashboard
         this._pedidos.forEach(pedido => {
             if (pedido.status === "aceptado") {
                 const desgloses = pedido.desglosarCantidades();
                 desgloses.forEach(item => {
-                    conteoGlobal[item.producto] = (conteoGlobal[item.producto] || 0) + item.cantidad;
+                    if (item.producto) {
+                        const nombreLimpio = item.producto.trim().toLowerCase();
+                        conteoGlobal[nombreLimpio] = (conteoGlobal[nombreLimpio] || 0) + item.cantidad;
+                        formatoOriginal[nombreLimpio] = item.producto.trim(); // Guarda "Empanada de Pollo" en vez de "empanada de pollo"
+                    }
                 });
             }
         });
-        let productoMasVendido = "Ninguno";
+        let productoMasVendidoClave = "";
         let maxCantidad = 0;
-        for (const producto in conteoGlobal) {
-            if (conteoGlobal[producto] > maxCantidad) {
-                maxCantidad = conteoGlobal[producto];
-                productoMasVendido = producto;
+        for (const clave in conteoGlobal) {
+            if (conteoGlobal[clave] > maxCantidad) {
+                maxCantidad = conteoGlobal[clave];
+                productoMasVendidoClave = clave;
             }
         }
-        return maxCantidad > 0 ? `${productoMasVendido} (${maxCantidad} unds)` : "Ninguno";
+        if (maxCantidad > 0 && productoMasVendidoClave !== "") {
+            return `${formatoOriginal[productoMasVendidoClave]} (${maxCantidad} unds)`;
+        }
+        return "Ninguno";
     }
 }
 //# sourceMappingURL=Cl_mCafetin.js.map

@@ -17,8 +17,20 @@
   <main class="admin-grid">
     <div class="columna-lateral">
       
-      <!-- CONFIGURACIÓN DE TASA -->
+      <!-- BOTONES DE NAVEGACIÓN RÁPIDA -->
       <section class="card">
+        <h3>⚙️ Gestión del Cafetín</h3>
+        <div class="grid-nav-admin">
+          <button type="button" class="btn-nav-admin activo" data-target="sec-tasa">💵 Tasa del Día</button>
+          <button type="button" class="btn-nav-admin" data-target="sec-producto">🍔 Cargar Producto</button>
+          <button type="button" class="btn-nav-admin" data-target="sec-cuenta">🏦 Canal Financiero</button>
+          <button type="button" class="btn-nav-admin" data-target="sec-ventas">🔍 Consultar Ventas</button>
+          <button type="button" class="btn-nav-admin" data-target="sec-menu">📋 Menú Cargado</button>
+        </div>
+      </section>
+
+      <!-- CONFIGURACIÓN DE TASA -->
+      <section id="sec-tasa" class="card">
         <h3>💵 Tasa del Día (Dólar oficial)</h3>
         <div class="form-grupo row-inline">
           <input type="number" id="admin_inTasa" step="0.01" />
@@ -27,8 +39,12 @@
       </section>
 
       <!-- CARGAR PRODUCTO -->
-      <section class="card">
+      <section id="sec-producto" class="card oculto">
         <h3>🍔 Cargar Producto al Menú</h3>
+        <div class="form-grupo">
+          <label>Código del Producto:</label>
+          <input type="text" id="admin_inProdCodigo" placeholder="Ej. COM-01" />
+        </div>
         <div class="form-grupo">
           <label>Nombre del Producto:</label>
           <input type="text" id="admin_inProdNombre" placeholder="Ej. Arepa Reina Pepiada" />
@@ -51,7 +67,7 @@
       </section>
 
       <!-- REGISTRO DE CUENTAS RECEPTORAS CAFETÍN -->
-      <section class="card">
+      <section id="sec-cuenta" class="card oculto">
         <h3>🏦 Registrar Canal Financiero</h3>
         
         <div class="form-grupo">
@@ -87,8 +103,25 @@
         <button id="admin_btCta" class="btn-admin">Registrar Cuenta</button>
       </section>
 
+      <!-- CONSULTA POR FECHA -->
+      <section id="sec-ventas" class="card oculto">
+        <h3>🔍 Consultar Ventas por Fecha</h3>
+        <div class="form-grupo">
+          <label>Nombre del Producto:</label>
+          <select id="txtProductoBuscar">
+            <option value="">-- Seleccione un Producto --</option>
+          </select>
+        </div>
+        <div class="form-grupo">
+          <label>Fecha de Venta:</label>
+          <input type="date" id="txtFechaBuscar" />
+        </div>
+        <button id="btnBuscarPorFecha" class="btn-admin">Buscar Unidades</button>
+        <div id="lblResultadoCantidades" style="margin-top: 12px; font-size: 13px; font-weight: 600; text-align: center;"></div>
+      </section>
+
       <!-- MENÚ ACTUAL -->
-      <section class="card">
+      <section id="sec-menu" class="card oculto">
         <h3>📋 Menú Cargado Actual</h3>
         <ul id="admin_listaProductos" class="lista-prods"></ul>
       </section>

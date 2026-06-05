@@ -19,6 +19,7 @@ export default class Cl_cCafetin {
     this.vista.onAgregarCuenta(() => this.procesarCuenta());
     this.vista.onAccionPedido((id, accion) => this.procesarAccionPedido(id, accion));
     this.vista.onEliminarProducto((id) => this.procesarEliminarProducto(id));
+    this.vista.onBuscarPorFecha(() => this.procesarBusquedaPorFecha());
   }
 
   private async inicializarDashboard() {
@@ -56,6 +57,17 @@ export default class Cl_cCafetin {
     }
   }
 
+  private procesarBusquedaPorFecha() {
+    const producto = this.vista.productoBuscar;
+    const fecha = this.vista.fechaBuscar;
+    if (!producto) {
+      alert("Por favor, ingrese el nombre del producto.");
+      return;
+    }
+    const cantidadCalculada = this.modelo.calcularCantidadPorProductoYFecha(producto, fecha);
+    this.vista.mostrarCantidadReportada(cantidadCalculada, producto, fecha);
+  }
+
   private async procesarAccionPedido(id: string, accion: "aceptado" | "rechazado") {
     if (!confirm(`¿Confirmar acción: ${accion.toUpperCase()} para la orden #${id}?`)) return;
     try {
@@ -86,11 +98,12 @@ export default class Cl_cCafetin {
   }
 
   private async procesarProducto() {
-    if (!this.vista.prodNombre || this.vista.prodPrecio <= 0) {
-      alert("Complete los campos del producto correctamente.");
+    if (!this.vista.prodCodigo || !this.vista.prodNombre || this.vista.prodPrecio <= 0) {
+      alert("Complete los campos del producto correctamente (debe incluir el código).");
       return;
     }
     const nuevoProducto = {
+      codigo: this.vista.prodCodigo,
       nombre: this.vista.prodNombre,
       precio: this.vista.prodPrecio,
       categoria: this.vista.prodCategoria

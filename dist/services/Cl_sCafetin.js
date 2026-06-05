@@ -14,7 +14,7 @@ export default class Cl_sCafetin {
         return await Cl_sMockApiCaf.get(this.urlProductos);
     }
     static async agregarProducto(prod) {
-        return await Cl_sMockApiCaf.post(this.urlProductos, prod);
+        return !!(await Cl_sMockApiCaf.post(this.urlProductos, prod));
     }
     static async eliminarProducto(id) {
         return await Cl_sMockApiCaf.delete(`${this.urlProductos}/${id}`);
@@ -27,7 +27,7 @@ export default class Cl_sCafetin {
         return await Cl_sMockApiCaf.put(this.urlConfig, { tasaCambio: nuevaTasa });
     }
     static async agregarCuenta(cuenta) {
-        return await Cl_sMockApiCaf.post(this.urlCuentas, cuenta);
+        return !!(await Cl_sMockApiCaf.post(this.urlCuentas, cuenta));
     }
 }
 //# sourceMappingURL=Cl_sCafetin.js.map

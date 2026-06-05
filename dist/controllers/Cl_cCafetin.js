@@ -13,6 +13,7 @@ export default class Cl_cCafetin {
         this.vista.onAgregarCuenta(() => this.procesarCuenta());
         this.vista.onAccionPedido((id, accion) => this.procesarAccionPedido(id, accion));
         this.vista.onEliminarProducto((id) => this.procesarEliminarProducto(id));
+        this.vista.onBuscarPorFecha(() => this.procesarBusquedaPorFecha());
     }
     async inicializarDashboard() {
         try {
@@ -46,6 +47,16 @@ export default class Cl_cCafetin {
             console.error("Error al refrescar las métricas operativas:", error);
         }
     }
+    procesarBusquedaPorFecha() {
+        const producto = this.vista.productoBuscar;
+        const fecha = this.vista.fechaBuscar;
+        if (!producto) {
+            alert("Por favor, ingrese el nombre del producto.");
+            return;
+        }
+        const cantidadCalculada = this.modelo.calcularCantidadPorProductoYFecha(producto, fecha);
+        this.vista.mostrarCantidadReportada(cantidadCalculada, producto, fecha);
+    }
     async procesarAccionPedido(id, accion) {
         if (!confirm(`¿Confirmar acción: ${accion.toUpperCase()} para la orden #${id}?`))
             return;
@@ -77,11 +88,12 @@ export default class Cl_cCafetin {
         }
     }
     async procesarProducto() {
-        if (!this.vista.prodNombre || this.vista.prodPrecio <= 0) {
-            alert("Complete los campos del producto correctamente.");
+        if (!this.vista.prodCodigo || !this.vista.prodNombre || this.vista.prodPrecio <= 0) {
+            alert("Complete los campos del producto correctamente (debe incluir el código).");
             return;
         }
         const nuevoProducto = {
+            codigo: this.vista.prodCodigo,
             nombre: this.vista.prodNombre,
             precio: this.vista.prodPrecio,
             categoria: this.vista.prodCategoria
