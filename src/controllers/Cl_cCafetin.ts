@@ -19,7 +19,8 @@ export default class Cl_cCafetin {
     this.vista.onAgregarCuenta(() => this.procesarCuenta());
     this.vista.onAccionPedido((id, accion) => this.procesarAccionPedido(id, accion));
     this.vista.onEliminarProducto((id) => this.procesarEliminarProducto(id));
-    this.vista.onBuscarPorFecha(() => this.procesarBusquedaPorFecha());
+    this.vista.onBuscarCliente(() => this.procesarBuscarCliente());
+    this.vista.onAlternarTipoRegistro(() => this.alternarTipoRegistro());
   }
 
   private async inicializarDashboard() {
@@ -56,18 +57,6 @@ export default class Cl_cCafetin {
       console.error("Error al refrescar las métricas operativas:", error);
     }
   }
-
-  private procesarBusquedaPorFecha() {
-    const producto = this.vista.productoBuscar;
-    const fecha = this.vista.fechaBuscar;
-    if (!producto) {
-      alert("Por favor, ingrese el nombre del producto.");
-      return;
-    }
-    const cantidadCalculada = this.modelo.calcularCantidadPorProductoYFecha(producto, fecha);
-    this.vista.mostrarCantidadReportada(cantidadCalculada, producto, fecha);
-  }
-
   private async procesarAccionPedido(id: string, accion: "aceptado" | "rechazado") {
     if (!confirm(`¿Confirmar acción: ${accion.toUpperCase()} para la orden #${id}?`)) return;
     try {
@@ -179,6 +168,42 @@ export default class Cl_cCafetin {
       }
     } catch {
       alert("Error al intentar dar de baja el producto.");
+    }
+  }
+
+  /**
+   * Procesa la consulta del total pagado por un cliente.
+   * Coordina el flujo obteniendo la cédula desde la Vista, invocando los métodos del Modelo
+   * para efectuar el cálculo del total (USD y Bs), y enviando los resultados de vuelta a la Vista para su visualización.
+   */
+  private procesarBuscarCliente() {
+    const cedula = this.vista.cedulaABuscar;
+    if (cedula === 0) {
+      alert("Por favor, introduzca una cédula válida.");
+      return;
+    }
+    const totalUSD = this.modelo.calcularTotalUSDCliente(cedula);
+    const totalBs = this.modelo.calcularTotalBsCliente(cedula);
+
+    this.vista.mostrarTotalPagadoCliente(cedula, totalUSD, totalBs);
+  }
+
+  private alternarTipoRegistro(): void {
+    const tipo = this.vista.tipoCuentaRegistrar;
+    if (tipo === "pagomovil") {
+      this.vista.configurarCamposCuenta({
+        mostrarTitular: false,
+        labelCedula: "Cédula o RIF:",
+        labelNumero: "Número de Teléfono PM:",
+        placeholderNumero: "Ej. 04141234567"
+      });
+    } else if (tipo === "transferencia") {
+      this.vista.configurarCamposCuenta({
+        mostrarTitular: true,
+        labelCedula: "Cédula o RIF del Titular:",
+        labelNumero: "Número de Cuenta (20 dígitos):",
+        placeholderNumero: "Ej. 01020000..."
+      });
     }
   }
 }

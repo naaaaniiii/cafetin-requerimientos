@@ -10,8 +10,6 @@ export interface I_vCafetin {
   get cuentaNumero(): string;
   get cuentaCedula(): string;
   get tipoCuentaRegistrar(): "transferencia" | "pagomovil";
-  get fechaBuscar(): string;
-  get productoBuscar(): string;
 
   // Métodos de acción (Callbacks)
   onActualizarTasa(callback: () => void): void;
@@ -19,16 +17,26 @@ export interface I_vCafetin {
   onAgregarCuenta(callback: () => void): void;
   onAccionPedido(callback: (id: string, accion: "aceptado" | "rechazado") => void): void;
   onEliminarProducto(callback: (id: string) => void): void;
-  onBuscarPorFecha(callback: () => void): void;
+  onAlternarTipoRegistro(callback: () => void): void;
 
   // Métodos de actualización de UI (setters y renderizado)
   setTasaActual(tasa: number): void;
-  mostrarCantidadReportada(cantidad: number, producto: string, fecha: string): void;
   renderizarEstadisticas(datos: any): void;
   renderizarPedidos(pedidos: any[]): void;
   renderizarListaProductos(productos: any[]): void;
+  mostrarTotalPagadoCliente(cedula: number, totalUSD: number, totalBs: number): void;
+  configurarCamposCuenta(config: {
+    mostrarTitular: boolean;
+    labelCedula: string;
+    labelNumero: string;
+    placeholderNumero: string;
+  }): void;
 
   // Métodos de limpieza
   limpiarFormProducto(): void;
   limpiarFormCuenta(): void;
+
+  // Eventos de cliente
+  get cedulaABuscar(): number;
+  onBuscarCliente(callback: () => void): void;
 }
