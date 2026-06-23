@@ -24,6 +24,8 @@ export interface I_vCafetin {
   renderizarEstadisticas(datos: any): void;
   renderizarPedidos(pedidos: any[]): void;
   renderizarListaProductos(productos: any[]): void;
+  mostrarMensajeVacioReporte(fechaHoy: string): void;
+  renderizarReporteAntiguedad(productos: any[], fechaHoy: string): void;
   mostrarTotalPagadoCliente(cedula: number, totalUSD: number, totalBs: number): void;
   configurarCamposCuenta(config: {
     mostrarTitular: boolean;

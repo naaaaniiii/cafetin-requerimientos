@@ -3,6 +3,7 @@ import Cl_mPedido from "./Cl_mPedido.js";
 export default class Cafetin {
   private _tasaCambio: number;
   private _pedidos: Cl_mPedido[] = [];
+  private _productos: any[] = [];
 
   constructor(tasaInicial: number = 0) {
     this._tasaCambio = tasaInicial;
@@ -32,6 +33,48 @@ export default class Cafetin {
           status: p.status,
         })
       );
+    });
+  }
+
+  public setProductos(arrayPlanos: any[]) {
+    this._productos = [];
+    arrayPlanos.forEach((p) => {
+      this._productos.push({
+        idProd: p.idProd ? Number(p.idProd) : (p.id ? Number(p.id) : 0),
+        codigo: p.codigo,
+        nombre: p.nombre,
+        precio: Number(p.precio),
+        categoria: p.categoria,
+        fechaRegistro: p.fechaRegistro,
+      });
+    });
+  }
+
+  public get productos(): any[] {
+    return this._productos;
+  }
+
+  public obtenerFechaHoy(): string {
+    const hoy = new Date();
+    const y = hoy.getFullYear();
+    const m = String(hoy.getMonth() + 1).padStart(2, '0');
+    const d = String(hoy.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  public obtenerProductosMasDeUnaSemana(): any[] {
+    const hoyStr = this.obtenerFechaHoy();
+    const hoy = new Date(hoyStr);
+    hoy.setHours(0, 0, 0, 0);
+
+    return this._productos.filter((p) => {
+      if (!p.fechaRegistro) return false;
+      const fechaReg = new Date(p.fechaRegistro);
+      fechaReg.setHours(0, 0, 0, 0);
+
+      const diffTime = hoy.getTime() - fechaReg.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 7;
     });
   }
 

@@ -30,7 +30,9 @@ export default class Cl_cCafetin {
       this.modelo.tasaCambio = tasa;
       
       const prods = await Cl_sCafetin.obtenerProductos();
+      this.modelo.setProductos(prods);
       this.vista.renderizarListaProductos(prods);
+      this.refrescarReporte();
       
       await this.cargarYRenderizarPedidos();
     } catch (error) {
@@ -91,18 +93,22 @@ export default class Cl_cCafetin {
       alert("Complete los campos del producto correctamente (debe incluir el código).");
       return;
     }
+
     const nuevoProducto = {
       codigo: this.vista.prodCodigo,
       nombre: this.vista.prodNombre,
       precio: this.vista.prodPrecio,
-      categoria: this.vista.prodCategoria
+      categoria: this.vista.prodCategoria,
+      fechaRegistro: this.modelo.obtenerFechaHoy()
     };
     try {
       if (await Cl_sCafetin.agregarProducto(nuevoProducto)) {
         alert("¡Producto incorporado al menú del cafetín exitosamente!");
         this.vista.limpiarFormProducto();
         const prods = await Cl_sCafetin.obtenerProductos();
+        this.modelo.setProductos(prods);
         this.vista.renderizarListaProductos(prods);
+        this.refrescarReporte();
       }
     } catch {
       alert("Error al intentar añadir el producto.");
@@ -164,10 +170,23 @@ export default class Cl_cCafetin {
       if (await Cl_sCafetin.eliminarProducto(Number(id))) {
         alert("Producto eliminado del menú.");
         const prods = await Cl_sCafetin.obtenerProductos();
+        this.modelo.setProductos(prods);
         this.vista.renderizarListaProductos(prods);
+        this.refrescarReporte();
       }
     } catch {
       alert("Error al intentar dar de baja el producto.");
+    }
+  }
+
+  private refrescarReporte() {
+    const hoyStr = this.modelo.obtenerFechaHoy();
+    const productosAntiguos = this.modelo.obtenerProductosMasDeUnaSemana();
+
+    if (productosAntiguos.length === 0) {
+      this.vista.mostrarMensajeVacioReporte(hoyStr);
+    } else {
+      this.vista.renderizarReporteAntiguedad(productosAntiguos, hoyStr);
     }
   }
 

@@ -26,6 +26,7 @@
           <button type="button" class="btn-nav-admin" data-target="sec-cuenta">🏦 Canal Financiero</button>
           <button type="button" class="btn-nav-admin" data-target="sec-menu">📋 Menú Cargado</button>
           <button type="button" class="btn-nav-admin" data-target="sec-cliente">🔍 Consultar Cliente</button>
+          <button type="button" class="btn-nav-admin" data-target="sec-reporte">📅 Reporte Antigüedad</button>
         </div>
       </section>
 
@@ -147,6 +148,30 @@
           </div>
         </div>
         <div id="admin_lblResultadoCliente" class="resultado-busqueda" style="margin-top: 15px;"></div>
+      </section>
+
+      <!-- REPORTE ANTIGÜEDAD -->
+      <section id="sec-reporte" class="card oculto">
+        <h3>📅 Reporte de Productos Antiguos</h3>
+        <p style="font-size: 13px; color: #795548; margin-bottom: 12px;">
+          Fecha de hoy: <strong id="admin_lblFechaHoy"></strong>
+        </p>
+        <div style="overflow-x: auto; max-height: 300px; border: 1px solid #f3ede8; border-radius: 8px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="background-color: #fdfaf7; text-align: left;">
+                <th style="padding: 8px; border-bottom: 2px solid #efe5dd;">Código</th>
+                <th style="padding: 8px; border-bottom: 2px solid #efe5dd;">Nombre</th>
+                <th style="padding: 8px; border-bottom: 2px solid #efe5dd;">Precio</th>
+                <th style="padding: 8px; border-bottom: 2px solid #efe5dd;">Categoría</th>
+                <th style="padding: 8px; border-bottom: 2px solid #efe5dd;">Fecha Reg.</th>
+              </tr>
+            </thead>
+            <tbody id="admin_tablaReporteProductos">
+              <!-- Cargado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
 

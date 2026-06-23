@@ -29,6 +29,10 @@ export default class vCafetin implements I_vCafetin {
   private btBuscarCliente: HTMLButtonElement;
   private lblResultadoCliente: HTMLElement;
 
+  // SELECTORES PARA REPORTE DE ANTIGÜEDAD
+  private tablaReporteProductos: HTMLElement;
+  private lblFechaHoy: HTMLElement;
+
   private manejadorAccionPedido!: (id: string, accion: "aceptado" | "rechazado") => void;
   private manejadorEliminarProducto!: (id: string) => void;
 
@@ -61,9 +65,13 @@ export default class vCafetin implements I_vCafetin {
     this.btBuscarCliente = document.getElementById("admin_btBuscarCliente") as HTMLButtonElement;
     this.lblResultadoCliente = document.getElementById("admin_lblResultadoCliente") as HTMLElement;
 
+    // Inicialización de elementos del reporte
+    this.tablaReporteProductos = document.getElementById("admin_tablaReporteProductos") as HTMLElement;
+    this.lblFechaHoy = document.getElementById("admin_lblFechaHoy") as HTMLElement;
+
     // Configuración de la navegación en el panel de administración
     const btnsNav = document.querySelectorAll(".btn-nav-admin");
-    const sections = ["sec-tasa", "sec-producto", "sec-cuenta","sec-menu", "sec-cliente"];
+    const sections = ["sec-tasa", "sec-producto", "sec-cuenta","sec-menu", "sec-cliente", "sec-reporte"];
 
     const mostrarSeccionAdmin = (targetId: string) => {
       sections.forEach(id => {
@@ -265,11 +273,12 @@ export default class vCafetin implements I_vCafetin {
     // 2. Recorremos los productos
     productos.forEach(p => {
       const prodId = p.idProd ? p.idProd.toString() : p.id;
+      const fechaInfo = p.fechaRegistro ? ` <small style="color: #8d6e63; font-size: 11px;">(${p.fechaRegistro})</small>` : '';
       // 3. Creamos el elemento HTML para este producto
       const li = document.createElement("li");
       li.className = "prod-item";
       li.innerHTML = `
-        <span>• [${p.codigo || 'S/C'}] <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
+        <span>• [${p.codigo || 'S/C'}] <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$${fechaInfo}</span>
         <button class="btn-del" data-id="${prodId}">🗑</button>`;
         
       // Lo metemos en la lista principal
@@ -277,6 +286,28 @@ export default class vCafetin implements I_vCafetin {
       
       // 4. Conectamos el botón de basura con el manejador (para avisarle al Controlador)
       li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(prodId));
+    });
+  }
+
+  mostrarMensajeVacioReporte(fechaHoy: string): void {
+    this.lblFechaHoy.innerText = fechaHoy;
+    this.tablaReporteProductos.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 15px;">No hay productos con más de una semana cargados en el sistema</td></tr>`;
+  }
+
+  renderizarReporteAntiguedad(productos: any[], fechaHoy: string): void {
+    this.lblFechaHoy.innerText = fechaHoy;
+    this.tablaReporteProductos.innerHTML = "";
+
+    productos.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><b>${p.codigo || 'S/C'}</b></td>
+        <td>${p.nombre}</td>
+        <td><b>${p.precio.toFixed(2)}$</b></td>
+        <td><span class="badge status-aceptado">${p.categoria.toUpperCase()}</span></td>
+        <td><span class="ref-badge">${p.fechaRegistro || 'Sin Fecha'}</span></td>
+      `;
+      this.tablaReporteProductos.appendChild(tr);
     });
   }
 
